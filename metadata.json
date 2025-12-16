@@ -1,0 +1,7 @@
+{
+  "name": "SalesFlow AI",
+  "description": "A smart sales dashboard powered by Google Sheets data and Gemini AI.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <title>SalesFlow AI - Holy Foods</title>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --ios-ease: cubic-bezier(0.25, 1, 0.5, 1);
+      }
+      body { 
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        /* Default to light, handled by Tailwind classes usually but set base here */
+        background-color: #F2F2F7; 
+        color: #1D1D1F;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        transition: background-color 0.5s var(--ios-ease), color 0.5s var(--ios-ease);
+      }
+
+      /* Dark Mode Base Overrides via class */
+      .dark body {
+        background-color: #0F0F0F;
+        color: #F5F5F7;
+      }
+      
+      /* Scrollbar Styling */
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); }
+      
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+      .dark .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); }
+      
+      /* Glassmorphism Utilities - iOS Style */
+      .glass {
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      }
+      
+      /* Dark Mode Glass - True Gradient Border via Mask */
+      .dark .glass {
+        position: relative;
+        background: linear-gradient(145deg, rgba(30, 30, 30, 0.7) 0%, rgba(10, 10, 10, 0.7) 100%);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        /* Force remove Tailwind borders to let ::after handle it */
+        border-width: 0 !important;
+        border-style: none !important;
+        border-color: transparent !important;
+      }
+
+      /* High Quality Gradient Border Pseudo-element */
+      .dark .glass::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit; 
+        padding: 1px; /* Border thickness */
+        /* Subtle Premium Gradient: Top-Left White -> Bottom-Right Transparent */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%); 
+        -webkit-mask: 
+           linear-gradient(#fff 0 0) content-box, 
+           linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none; /* Crucial: allows clicks to pass through to card content */
+        z-index: 2; /* Sits above background */
+      }
+      
+      .glass-heavy {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+
+      .dark .glass-heavy {
+        background: rgba(30, 30, 32, 0.85);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        border-left: 1px solid rgba(255, 255, 255, 0.15);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        border-right: 1px solid rgba(0, 0, 0, 0.2);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      }
+
+      /* Animations */
+      @keyframes floatUp {
+        from { opacity: 0; transform: translateY(16px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .animate-enter { animation: floatUp 0.6s var(--ios-ease) forwards; }
+      
+      .tap-active:active { transform: scale(0.96); transition: transform 0.1s; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "jspdf": "https://esm.sh/jspdf@^2.5.1",
+    "react-markdown": "https://esm.sh/react-markdown@9.0.1",
+    "remark-gfm": "https://esm.sh/remark-gfm@4.0.0"
+  }
+}
+</script>
+<script>
+    tailwind.config = {
+      darkMode: 'class', // Enable class-based dark mode
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            ios: {
+              bg: '#F2F2F7',
+              'bg-dark': '#0F0F0F',
+              surface: '#FFFFFF',
+              'surface-dark': '#1C1C1E',
+              text: '#1D1D1F',
+              'text-dark': '#F5F5F7',
+              subtext: '#86868B',
+              border: '#E5E5EA',
+              'border-dark': '#38383A',
+              blue: '#007AFF',
+              green: '#34C759',
+              orange: '#FF9500',
+              red: '#FF3B30',
+              purple: '#AF52DE',
+            },
+            hf: {
+              lemon: '#7BCA0C',
+              lemonHover: '#6BB00A',
+              lemonLight: '#F2F8E9',
+              green: '#005234',
+              greenHover: '#00422A',
+              greenLight: '#E6F2ED',
+              orange: '#F45218',
+              yellow: '#FFC51D',
+            }
+          },
+          borderRadius: {
+            'xl': '16px',
+            '2xl': '20px',
+            '3xl': '28px',
+          },
+          boxShadow: {
+            'soft': '0 2px 8px rgba(0,0,0,0.04)',
+            'medium': '0 8px 24px rgba(0,0,0,0.06)',
+            'floating': '0 20px 48px rgba(0,0,0,0.12)',
+            'glow-lemon': '0 0 20px rgba(123, 202, 12, 0.3)',
+          }
+        },
+      },
+      plugins: []
+    }
+  </script>
+</head>
+  <body class="bg-ios-bg dark:bg-ios-bg-dark text-ios-text dark:text-ios-text-dark antialiased selection:bg-hf-lemon selection:text-white overflow-hidden transition-colors duration-500">
+    <div id="root"></div>
+  </body>
+</html>
