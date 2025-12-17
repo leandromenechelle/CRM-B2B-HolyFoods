@@ -109,15 +109,23 @@ export const quickAnalysis = async (leads: Lead[]): Promise<string> => {
 };
 
 /**
- * Generate Sales Message Template
+ * Generate Sales Message Template with strict tag rules
  */
 export const generateTemplateDraft = async (instruction: string): Promise<string> => {
   try {
     const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
-      contents: `Escreva um template de mensagem de vendas para WhatsApp (curto, direto, persuasivo) seguindo esta instrução: "${instruction}". 
-      Use [Nome] para o nome do cliente. Não use aspas no output.`,
+      contents: `ATUE COMO: Um especialista em Copywriting B2B para WhatsApp.
+      
+      TAREFA: Crie um template de mensagem de vendas curto, direto e persuasivo baseado na instrução abaixo.
+      INSTRUÇÃO: "${instruction}"
+      
+      REGRAS RÍGIDAS DE FORMATAÇÃO:
+      1. Use APENAS estas tags dinâmicas onde apropriado: {nome_cliente}, {nome_vendedor}, {razao_social}, {cnpj}, {telefone}.
+      2. NUNCA responda como um chat ("Aqui está sua mensagem..."). Retorne APENAS o texto da mensagem.
+      3. Não use aspas no início ou fim.
+      4. O tom deve ser profissional mas acessível (Holy Foods style).`,
     });
     return response.text || "";
   } catch (error) {

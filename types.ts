@@ -1,5 +1,3 @@
-
-
 export interface Attachment {
   id: string;
   name: string;
@@ -8,10 +6,30 @@ export interface Attachment {
   size: number;
 }
 
+export type Role = 'MASTER' | 'LEADER' | 'SALES';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password?: string; // In a real app, this would be hashed. Storing plain for demo requirement.
+  role: Role;
+  photoUrl?: string;
+  mustChangePassword?: boolean;
+}
+
 export interface Salesperson {
   id: string;
   name: string;
-  photoUrl?: string; // Base64 string for avatar
+  email?: string;
+  photoUrl?: string;
+}
+
+export interface ChangeLogItem {
+  id: string;
+  description: string;
+  timestamp: string;
+  author: string;
 }
 
 export interface Lead {
@@ -25,14 +43,12 @@ export interface Lead {
   cidade: string;
   uf: string;
   cep: string;
-  dataSubmissao: string; // ISO Date string
+  dataSubmissao: string;
   categoria: string;
   instagram?: string;
   
-  // CNPJ Card Data (BrasilAPI)
   cnpjData?: CnpjData;
 
-  // UTMs
   utmSource: string;
   utmMedium: string;
   utmCampaign: string;
@@ -40,22 +56,26 @@ export interface Lead {
   utmTerm?: string;
   utmId?: string;
   
-  // Sales Process
-  messageSentAt?: string; // ISO Date string
-  lastTemplateTitle?: string; // Title of the last sent template
-  messageHistory?: MessageHistoryItem[]; // History of sent messages
-  salesperson?: string; // Name of the salesperson (linked to Salesperson.name)
+  messageSentAt?: string;
+  messageStatus?: 'SENT' | 'FAILED' | 'PENDING_CONFIRMATION';
+  lastTemplateTitle?: string;
+  messageHistory?: MessageHistoryItem[];
+  
+  salesperson?: string;
+  
+  // Fields for reallocation logic
+  originalOwner?: string; // Name of the deleted user
+  isTransferPending?: boolean; // If true, belongs to Master temporarily
+
   dealStatus: 'PENDING' | 'WON' | 'LOST';
   wonDate?: string;
   wonValue?: number;
   lostDate?: string;
   lostReason?: string;
   
-  // Attachments (Multiple)
   attachments?: Attachment[];
-  
-  // Notes
   notes: Note[];
+  changeLog?: ChangeLogItem[];
 }
 
 export interface CnpjData {
@@ -89,13 +109,14 @@ export interface MessageHistoryItem {
   sentAt: string;
   templateTitle: string;
   salesperson: string;
+  status?: 'SUCCESS' | 'FAILED';
 }
 
 export interface Note {
   id: string;
   type: 'TEXT' | 'AUDIO';
-  content: string; // Text content or Transcript
-  audioUrl?: string; // For playback
+  content: string;
+  audioUrl?: string;
   createdAt: string;
 }
 
@@ -103,11 +124,11 @@ export interface MessageTemplate {
   id: string;
   title: string;
   content: string;
+  ownerId?: string;
 }
 
 export type Page = 'DASHBOARD' | 'LEADS_VALID' | 'LEADS_INVALID' | 'PLAYBOOK' | 'CONFIG' | 'STRATEGY';
 
-// Chart Data Types
 export interface UtmData {
   name: string;
   value: number;

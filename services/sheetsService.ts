@@ -60,12 +60,19 @@ const mapRowToLead = (row: any, statusOverride: 'VALID' | 'INVALID'): Lead => {
   let dataSubmissao = new Date().toISOString();
   const rawDate = getValue(6);
   if (rawDate) {
-    // Attempt to parse "Date(year, month, day)" from GViz or standard string
+    // Attempt to parse "Date(year, month, day, hour, min, sec)" from GViz or standard string
     if (typeof rawDate === 'string' && rawDate.startsWith('Date(')) {
         const parts = rawDate.match(/\d+/g);
         if (parts && parts.length >= 3) {
             // JS months are 0-indexed
-            dataSubmissao = new Date(Number(parts[0]), Number(parts[1]), Number(parts[2])).toISOString();
+            const year = Number(parts[0]);
+            const month = Number(parts[1]);
+            const day = Number(parts[2]);
+            const hours = parts.length > 3 ? Number(parts[3]) : 0;
+            const minutes = parts.length > 4 ? Number(parts[4]) : 0;
+            const seconds = parts.length > 5 ? Number(parts[5]) : 0;
+            
+            dataSubmissao = new Date(year, month, day, hours, minutes, seconds).toISOString();
         }
     } else {
         const parsed = new Date(rawDate);
@@ -104,7 +111,8 @@ const mapRowToLead = (row: any, statusOverride: 'VALID' | 'INVALID'): Lead => {
 
     // Defaults
     dealStatus: 'PENDING',
-    notes: []
+    notes: [],
+    changeLog: []
   };
 };
 

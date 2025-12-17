@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Maximize2, Minimize2, Sparkles } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Maximize2, Minimize2, Sparkles, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Lead } from '../types';
@@ -23,6 +23,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ leads }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
@@ -38,6 +39,12 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ leads }) => {
     const aiMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: answer };
     setMessages(prev => [...prev, aiMsg]);
     setIsLoading(false);
+  };
+
+  const handleCopy = (content: string, id: string) => {
+    navigator.clipboard.writeText(content);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   return (
@@ -67,14 +74,23 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ leads }) => {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-transparent">
+          <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-transparent custom-scrollbar">
             {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-4 text-sm shadow-sm ${msg.role === 'user' ? 'bg-hf-lemon text-white rounded-2xl rounded-tr-sm' : 'bg-white dark:bg-white/10 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm border border-gray-100 dark:border-white/5'}`}>
+              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} group`}>
+                <div className={`max-w-[85%] p-4 text-sm shadow-sm relative ${msg.role === 'user' ? 'bg-hf-lemon text-white rounded-2xl rounded-tr-sm' : 'bg-white dark:bg-white/10 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm border border-gray-100 dark:border-white/5 pb-8'}`}>
                   {msg.role === 'user' ? msg.content : (
-                    <div className="prose prose-sm max-w-none prose-p:leading-snug prose-strong:text-hf-green dark:prose-strong:text-hf-lemon prose-invert">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-                    </div>
+                    <>
+                      <div className="prose prose-sm max-w-none prose-p:leading-snug prose-strong:text-hf-green dark:prose-strong:text-hf-lemon dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-gray-100 dark:prose-li:text-gray-100 dark:prose-th:text-white dark:prose-td:text-gray-200">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                      </div>
+                      <button 
+                        onClick={() => handleCopy(msg.content, msg.id)}
+                        className="absolute bottom-2 right-2 p-1.5 rounded-lg text-gray-400 hover:text-hf-lemon hover:bg-gray-100 dark:hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"
+                        title="Copiar resposta"
+                      >
+                        {copiedId === msg.id ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

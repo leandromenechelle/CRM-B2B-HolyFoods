@@ -25,6 +25,7 @@ interface DashboardProps {
   onRefreshInsights: () => void;
   insightLastUpdated: string | null;
   isDarkMode: boolean;
+  datePreset: string; // Added to receive the filter state
 }
 
 // Brand Palette Constants
@@ -43,7 +44,7 @@ const truncateLabel = (value: string, maxLength: number = 40) => {
     return `${value.substring(0, maxLength)}...`;
 };
 
-const ResultsSummary = ({ leads, isDarkMode }: { leads: Lead[], isDarkMode: boolean }) => {
+const ResultsSummary = ({ leads, isDarkMode, subtitle }: { leads: Lead[], isDarkMode: boolean, subtitle: string }) => {
     const monthlyData = useMemo(() => {
         const today = new Date();
         const months = [];
@@ -126,7 +127,7 @@ const ResultsSummary = ({ leads, isDarkMode }: { leads: Lead[], isDarkMode: bool
                  <div className="w-10 h-10 bg-gray-50 dark:bg-white/10 rounded-2xl flex items-center justify-center text-hf-lemon"><BarChart2 size={20} /></div>
                  <div>
                     <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">Performance Geral</h3>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">Últimos 6 meses</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">{subtitle}</p>
                  </div>
             </div>
 
@@ -614,7 +615,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     leads, duplicateCount, onQuickAnalysis, analysisResult, isAnalyzing, 
     templates, salespeople, onUpdateLead,
     strategicInsights, isGeneratingInsights, onRefreshInsights, insightLastUpdated,
-    isDarkMode
+    isDarkMode, datePreset
 }) => {
 
   const [detailLead, setDetailLead] = useState<Lead | null>(null);
@@ -787,9 +788,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         .map(([name, stats]) => ({
             name,
             won: stats.won, 
-            lost: stats.lost,
+            lost: stats.lost, 
             realWon: stats.won, 
-            realLost: stats.lost,
+            realLost: stats.lost, 
             total: stats.won + stats.lost
         }))
         .filter(item => item.total > 2) 
@@ -837,6 +838,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const COLORS_CAT = [BRAND.LEMON, BRAND.DARK_GREEN, BRAND.YELLOW, BRAND.ORANGE, '#A4E040', '#007A4D'];
   const COLORS_LOSS = [BRAND.ORANGE, '#D63D0A', '#FF7A4D', '#FF9E7D', '#8C2805', '#1A1A1A'];
 
+  // Determine Subtitle based on DatePreset
+  const getDateLabel = () => {
+    switch (datePreset) {
+        case 'TODAY': return 'Hoje';
+        case '7D': return 'Últimos 7 dias';
+        case '30D': return 'Últimos 30 dias';
+        case 'MONTH': return 'Este Mês';
+        case 'ALL': return 'Todo o Período';
+        case 'CUSTOM': return 'Período Personalizado';
+        default: return 'Últimos 7 dias';
+    }
+  };
+
   return (
     <div className="space-y-12 max-w-[1600px] mx-auto">
       
@@ -865,7 +879,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Results Summary (Agora ocupa a largura toda no mobile/tablet, mas mantém a grade) */}
       <div className="w-full">
-           <ResultsSummary leads={leads} isDarkMode={isDarkMode} />
+           <ResultsSummary leads={leads} isDarkMode={isDarkMode} subtitle={getDateLabel()} />
       </div>
 
       {/* Analytics Deep Dive */}
